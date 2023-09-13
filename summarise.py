@@ -1,16 +1,28 @@
 import glob
 import os
+import sys
 import requests
 import openai
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
+def set_variables(args):
+    global folder_path
+    global global_type
+    global api_key
+
+    folder_path = args.folder_path
+    global_type = args.global_type
+    api_key = args.api_key
+
 comment_symbols = {
     ".py": '#',     # Python
     ".java": '//',  # Java
     ".js": '//',    # JavaScript
+    ".jsx": '//',    # JavaScript
     ".ts": '//',    # TypeScript
+    ".tsx": '//',    # TypeScript
     ".c": '//',     # C
     ".cpp": '//',   # C++
     ".cs": '//',    # C#
@@ -28,6 +40,11 @@ comment_symbols = {
 }
 language_extensions = comment_symbols.keys()
 
+global global_type
+global api_key
+global folder_path
+
+
 globalType = 'llama'
 api_key = None
 
@@ -36,6 +53,24 @@ def add_double_slashes(text, simbol='//'):
     commented_lines = [simbol + ' ' + line for line in lines]  # Add "//" before each line
     return '\n'.join(commented_lines)  # Join the lines back together
 
+# Function to add "This is a file" to the beginning of a file
+def add_comments_to_file(file_path, file_extension):
+    with open(file_path, 'r+') as file:
+        content = file.read()
+        file.seek(0, 0)
+        response = make_api_post(instr=f"{content}")
+        commentedResponse = add_double_slashes(response, simbol=comment_symbols[file_extension])
+        file.write(commentedResponse + content)
+
+# Function to process files in a folder tree recursively
+def process_files_in_folder(folder_path):
+    for file_path in glob.glob(f'{folder_path}/**/*', recursive=True):
+        _, file_name = os.path.split(file_path)
+        _, file_extension = os.path.splitext(file_name)
+        if(file_extension in language_extensions):
+            add_comments_to_file(file_path, file_extension)
+            print(f"Processed: {file_path}")
+            
 def make_api_post(instr=None):
     if globalType=='openai':
         return make_openai_post(instr)
@@ -82,82 +117,5 @@ def make_llama_post(instr=None, headers=None):
         print(f"Error making API request: {e}")
         return ""
     
-
-# Function to add "This is a file" to the beginning of a file
-def add_comments_to_file(file_path, file_extension):
-    with open(file_path, 'r+') as file:
-        content = file.read()
-        file.seek(0, 0)
-        print("cacat1")
-        response = make_api_post(instr=f"{content}")
-        print("cacat2", response)
-        commentedResponse = add_double_slashes(response, simbol=comment_symbols[file_extension])
-        file.write(commentedResponse + content)
-
-# Function to process files in a folder tree recursively
-def process_files_in_folder(folder_path):
-    for file_path in glob.glob(f'{folder_path}/**/*', recursive=True):
-        _, file_name = os.path.split(file_path)
-        _, file_extension = os.path.splitext(file_name)
-        if(file_extension in language_extensions):
-            add_comments_to_file(file_path, file_extension)
-            print(f"Processed: {file_path}")
-
-
-
-def get_option():
-    # List of options
-    options = ["llama", "openai"]
-    global global_type
-    global api_key
-
-    while True:
-        # Display the options to the user
-        print("Choose an option:")
-        for i, option in enumerate(options, start=1):
-            print(f"{i}. {option}")
-
-        # Get user input
-        try:
-            choice = int(input("Enter the number of your choice: "))
-
-            # Check if the choice is within the valid range
-            if 1 <= choice <= len(options):
-                selected_option = options[choice - 1]
-                print(f"You selected: {selected_option}")
-                global_type = selected_option
-                if global_type == 'openai':
-                    api_key = os.getenv("API_KEY")
-                break  # Exit the loop if input is valid
-            else:
-                print("Invalid choice. Please select a number from the list.")
-        except ValueError:
-            print("Invalid input. Please enter a valid number.")
-            
-     
-get_option()
-folder_path = input("Enter folder path: ")
-
-useCopy = True
-if(useCopy):
-    import shutil
-    # Source folder
-    source_folder = f'{folder_path}'
-
-    # Destination folder
-    destination_folder = f'{folder_path}_copy'
-
-    # Delete the existing destination directory if it exists
-    if os.path.exists(destination_folder):
-        shutil.rmtree(destination_folder)
-        
-    try:
-        # Copy the entire folder tree from source to destination
-        shutil.copytree(source_folder, destination_folder)
-        print(f"Folder '{source_folder}' copied to '{destination_folder}' successfully.")
-        folder_path = destination_folder
-    except Exception as e:
-        print(f"Error copying folder: {e}")
+  
     
-
-process_files_in_folder(folder_path)

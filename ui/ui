@@ -1,0 +1,40 @@
+import os
+from colorama import Fore, Style
+
+def print_colored_folder_tree(folder_tree):
+    """
+    Print a folder tree with specified colors for files.
+
+    Args:
+        folder_tree (list of tuples): Each tuple contains a folder path (str) and a color (str).
+
+    Returns:
+        None
+    """
+    for folder_path, color in folder_tree:
+        if not os.path.exists(folder_path):
+            print(f"{Fore.RED}Folder not found: {folder_path}{Style.RESET_ALL}")
+            continue
+
+        print(f"{color}{folder_path}{Style.RESET_ALL}")
+        for root, dirs, files in os.walk(folder_path):
+            relative_path = os.path.relpath(root, folder_path)
+
+            # Print subdirectories in blue
+            for dir_name in dirs:
+                print(f"{Fore.BLUE}{os.path.join(relative_path, dir_name)}{Style.RESET_ALL}")
+
+            # Print files with specified color
+            for file_name in files:
+                file_path = os.path.join(relative_path, file_name)
+                print(f"{color}{file_path}{Style.RESET_ALL}")
+
+# Example usage:
+if __name__ == "__main__":
+    folder_tree = [
+        ("/path/to/your/folder", Fore.GREEN),
+        ("/path/to/another/folder", Fore.RED),
+        # Add more folders with colors as needed
+    ]
+
+    print_colored_folder_tree(folder_tree)
