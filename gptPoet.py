@@ -2,14 +2,14 @@ import subprocess
 
 # from stableDiff import create_image
 
-def get_added_code():
+def get_added_code(dindArg="^+[^+].*"):
     try:
         # Run the "git diff" command to get added code
         git_diff_command = ["git", "diff", "--unified=0"]
         git_diff_process = subprocess.Popen(git_diff_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         
         # Run the "findstr" command to filter added code
-        findstr_command = ["findstr", "/r", "^+[^+].*"]
+        findstr_command = ["findstr", "/r", findArg]
         result = subprocess.run(findstr_command, stdin=git_diff_process.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         
         # Close the "git diff" process
@@ -49,7 +49,8 @@ def make_openai_post(api_key, message, system_prompt="You are a helpful assistan
 def main():
     begin_prompt = "explain to me in summary what this code does:"
     message = get_added_code()
-
+    if not message:
+        message = get_added_code("^-[^-].*")
     prompt = begin_prompt + message 
     apy_key = input("API KEY:")
 
