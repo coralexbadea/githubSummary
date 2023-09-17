@@ -1,4 +1,3 @@
-import json
 import subprocess
 
 # from stableDiff import create_image
@@ -45,13 +44,6 @@ def make_openai_post(api_key, message, system_prompt="You are a helpful assistan
         )   
     reply = chat.choices[0].message.content
     return reply
-
-
-def read_json(json_path):
-    data = None
-    with open(json_path, 'r') as file:
-        data = json.load(file)
-    return data 
 
 
 def main():
