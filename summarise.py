@@ -4,8 +4,8 @@ import sys
 import requests
 import openai
 import os
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 def set_variables(args):
     global folder_path
