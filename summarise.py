@@ -4,6 +4,8 @@ import sys
 import requests
 import openai
 import os
+from parser.text_splitter import split_text_by_length
+
 # from dotenv import load_dotenv
 # load_dotenv()
 
@@ -118,4 +120,6 @@ def make_llama_post(instr=None, headers=None):
         return ""
     
   
+if __name__ == '__main__':
     
+    split_text_by_length()
